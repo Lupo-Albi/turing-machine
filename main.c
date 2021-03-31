@@ -85,3 +85,49 @@ int indiceSimbolo(turing_t *turing, char simbolo) {
     }
     return 0;
 }
+
+/*
+ * Função: moverFita
+ ----------------------
+ * Realiza um movimento na fita da máquina para a direita ou para a esquerda
+ * Realiza uma verificação para garantir que o ponteiro para a fita e do sentindo do movimento não são inválidos (NULL). Caso sejam, aloca espaço para um símbolo e o preenche com o símbolo Branco e realiza o movimento
+ *
+ * *turing: a máquina de Turing a qual possui uma fita a ser lida e escrita
+ * direcao: direção para a qual o leitor da fita deve se mover
+ */
+void moverFita (turing_t *turing, int direcao) {
+    fita_t *fitaAntesDoMovimento = turing->fita;
+
+    if (direcao == DIREITA) {
+        // Verifica se o ponteito da fita e o ponteiro da sua direita são válidos
+        if (fitaAntesDoMovimento && fitaAntesDoMovimento->direita) {
+            // Move a fita para a direita
+            turing->fita = fitaAntesDoMovimento->direita;
+        } else {
+            turing->fita = calloc(1, sizeof(fita_t));
+            turing->fita->simbolo = turing->branco;
+
+            if (fitaAntesDoMovimento) {
+                // As duas linhas seguintes configuram um movimento para a direita porque a posição antiga da fita é movida para a esquerda da nova posição
+                turing->fita->esquerda = fitaAntesDoMovimento;
+                fitaAntesDoMovimento->direita = turing->fita;
+            }
+        }
+    } else if (direcao == ESQUERDA) {
+        // Verificia se o ponteiro da fita e o ponteiro da sua esquerda são válidos
+        if (fitaAntesDoMovimento && fitaAntesDoMovimento->esquerda) {
+            // Move a fita para a esquerda
+            turing->fita = fitaAntesDoMovimento->esquerda;
+        } 
+        else {
+            turing->fita = calloc(1, sizeof(fita_t));
+            turing->fita->simbolo = turing->branco;
+
+            if (fitaAntesDoMovimento) {
+                // As duas linhas seguintes configuram um movimento para a esquerda porque a posição antiga da fita é movida para a direita da nova posição
+                turing->fita->direita = fitaAntesDoMovimento;
+                fitaAntesDoMovimento->esquerda = turing->fita;
+            }
+        }
+    }
+}
