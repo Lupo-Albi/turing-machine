@@ -12,10 +12,10 @@ enum {
 typedef struct {
     int estadoAtual;
     int simboloLido;
-    int simboloGravado;
     int estadoSeguinte;
+    int simboloGravado;
     int movimento;
-} transicao_t;
+} Transicao;
 
 // Definindo a fita do autômato com o símbolo e ponteiros para a esquerda e direita da posição atual
 typedef struct fita_t {
@@ -37,7 +37,7 @@ typedef struct {
     int fitaComprimento;
     fita_t *fita;
     int transicoesComprimento;
-    transicao_t ***transicoes;
+    Transicao ***transicoes;
 } turing_t;
 
 
@@ -150,7 +150,7 @@ void moverFita(turing_t *maquina, int direcao) {
  *  int fitaComprimento (apenas um valor inteiro)
  *  fita_t *fita (conteúdo inicial da fita com cada símbolo escrito entre aspas simples)
  *  int transicoesComprimento (apenas um valor inteiro com a quantidade de transições da máquina)
- *  transicao_t ***transicoes (descrição das transições da máquina, isso é, a função programa ou função de transição como descrito pelo tipo transicao_t)
+ *  Transicao ***transicoes (descrição das transições da máquina, isso é, a função programa ou função de transição como descrito pelo tipo Transicao)
  *
  * Retorna: um elemento do tipo turing_t com todos dados passados como argumento
  */
@@ -208,13 +208,13 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     // Função Programa da máquina
     maquina->transicoesComprimento = va_arg(argumentos, int);
     // A função programa é uma matriz que armazena a transição de acordo com o estado e símbolo lido, assim são feitas duas alocações: alocação pela quantidade de estados (linhas da matriz) e alocação dos símbolos do alfabeto para cada estado (colunas da matriz)
-    maquina->transicoes = malloc(maquina->estadosComprimento * sizeof(transicao_t *));
+    maquina->transicoes = malloc(maquina->estadosComprimento * sizeof(Transicao *));
     for (i = 0; i < maquina->estadosComprimento; i++) {
-        maquina->transicoes[i] = malloc(maquina->simbolosComprimento * sizeof(transicao_t));
+        maquina->transicoes[i] = malloc(maquina->simbolosComprimento * sizeof(Transicao));
     }
     // Após ser criada a matriz da função programa, cria-se as transições, alocando o espaço para cada uma e as preenchendo de acordo com os argumentos passados
     for (i = 0; i < maquina->transicoesComprimento; i++) {
-        transicao_t *transicao = malloc(sizeof(transicao_t));
+        Transicao *transicao = malloc(sizeof(Transicao));
 
         transicao->estadoAtual = indiceEstado(maquina, va_arg(argumentos, char *));
         transicao->simboloLido = indiceSimbolo(maquina, va_arg(argumentos, char));
@@ -236,7 +236,7 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
  *
  * *maquina: Máquina de Turing a ser feita a configuração instantânea da sua execução
  */
-void imprimirCI (turing_t *maquina) {
+void imprimirCI(turing_t *maquina) {
     printf("%-10s ", maquina->estados[maquina->estadoAtual]);
     fita_t *fita = maquina->fita;
 
@@ -249,4 +249,35 @@ void imprimirCI (turing_t *maquina) {
         fita = fita->direita;
     }
     printf("/n");
+}
+
+
+/*
+ * Função: executarMaquina
+ * --------------------------------------
+ * Executa a máquina de Turing e suas configuraões instantâneas pela execução. 
+ *
+ * *maquina: máquina de Turing a ser executada
+ */
+void executarMaquina(turing_t *maquina) {
+    int i;
+    int contador = 0;
+    int maximoIteracoes = 9999;
+
+    while(contador < maximoIteracoes) {
+        imprimirCI(maquina);
+
+        for (i = 0; i < maquina->estadosFinaisComprimento; i++) {
+            if (maquina->estadosFinais[i] == maquina->estadoAtual) {
+                return;
+            }
+        }
+
+        // Executa a transição
+        Transicao *transicao = maquina->transicoes[maquina->estadoAtual][maquina->fita->simbolo];
+        maquina->fita->simbolo = transicao->simboloGravado;
+        moverFita(maquina, transicao->movimento);
+        maquina->estadoAtual = transicao->estadoSeguinte;
+    }
+
 }
