@@ -5,7 +5,8 @@
 
 enum {
     ESQUERDA,
-    DIREITA
+    DIREITA,
+    NAO_MOVER
 };
 
 // Dados para a execução de uma transição
@@ -18,11 +19,12 @@ typedef struct {
 } Transicao;
 
 // Definindo a fita do autômato com o símbolo e ponteiros para a esquerda e direita da posição atual
-typedef struct fita_t {
+typedef struct Fita Fita;
+struct Fita {
     int simbolo;
-    fita_t *esquerda;
-    fita_t *direita;
-} fita_t;
+    Fita *esquerda;
+    Fita *direita;
+};
 
 // Definindo um tipo com todos os elementos que compõem a máquina de Turing
 typedef struct {
@@ -35,14 +37,42 @@ typedef struct {
     int branco;
     int estadoAtual;
     int fitaComprimento;
-    fita_t *fita;
+    Fita *fita;
     int transicoesComprimento;
     Transicao ***transicoes;
 } turing_t;
 
 
+int indiceEstado(turing_t *maquina, char *estado);
+int indiceSimbolo(turing_t *maquina, char simbolo);
+void moverFita(turing_t *maquina, int direcao);
+turing_t *criarMaquina (int estadosComprimento, ...);
+void imprimirCI(turing_t *maquina);
+void executarMaquina(turing_t *maquina);
 
 void main(int argc, char *argv[]) {
+    turing_t *maquina = criarMaquina(
+        /*Estados*/                   5, "q0", "q1", "q2", "q3", "q4",
+        /*Estadoos finais*/           1, "q4",        
+        /* Símbolos*/                 5, 'U', 'a', 'b', 'A', 'B',
+        /*Branco*/                    'U',
+        /*Estado Inicial*/            "q0",
+        /*Conteúdo inicial da fita*/  4, 'a', 'a', 'b', 'b',
+        /*Transições*/                11,
+                                      "q0", 'a', 'A', DIREITA, "q1",
+                                      "q0", 'B', 'B', DIREITA, "q3",
+                                      "q0", 'U', 'U', DIREITA, "q4",
+                                      "q1", 'a', 'a', DIREITA, "q1",
+                                      "q1", 'b', 'B', ESQUERDA, "q2",
+                                      "q1", 'B', 'B', DIREITA, "q1",
+                                      "q2", 'a', 'a', ESQUERDA, "q2",
+                                      "q2", 'A', 'A', DIREITA, "q0",
+                                      "q2", 'B', 'B', ESQUERDA, "q2",
+                                      "q3", 'B', 'B', DIREITA, "q3",
+                                      "q3", 'U', 'U', DIREITA, "q4"
+    );
+
+    executarMaquina(maquina);
     
 }
 
@@ -97,7 +127,7 @@ int indiceSimbolo(turing_t *maquina, char simbolo) {
  * direcao: direção para a qual o leitor da fita deve se mover
  */
 void moverFita(turing_t *maquina, int direcao) {
-    fita_t *fitaAntesDoMovimento = maquina->fita;
+    Fita *fitaAntesDoMovimento = maquina->fita;
 
     if (direcao == DIREITA) {
         // Verifica se o ponteito da fita e o ponteiro da sua direita são válidos
@@ -105,7 +135,7 @@ void moverFita(turing_t *maquina, int direcao) {
             // Move a fita para a direita
             maquina->fita = fitaAntesDoMovimento->direita;
         } else {
-            maquina->fita = calloc(1, sizeof(fita_t));
+            maquina->fita = calloc(1, sizeof(Fita));
             maquina->fita->simbolo = maquina->branco;
 
             if (fitaAntesDoMovimento) {
@@ -121,7 +151,7 @@ void moverFita(turing_t *maquina, int direcao) {
             maquina->fita = fitaAntesDoMovimento->esquerda;
         } 
         else {
-            maquina->fita = calloc(1, sizeof(fita_t));
+            maquina->fita = calloc(1, sizeof(Fita));
             maquina->fita->simbolo = maquina->branco;
 
             if (fitaAntesDoMovimento) {
@@ -148,7 +178,7 @@ void moverFita(turing_t *maquina, int direcao) {
  *  int branco (um dos caractere que esteja presente nos símbolos do alfabeto escrito entre aspas simples)
  *  int estadoAtual (um dos estados que esteja presente nos estados escrito entre aspas dupla)
  *  int fitaComprimento (apenas um valor inteiro)
- *  fita_t *fita (conteúdo inicial da fita com cada símbolo escrito entre aspas simples)
+ *  Fita *fita (conteúdo inicial da fita com cada símbolo escrito entre aspas simples)
  *  int transicoesComprimento (apenas um valor inteiro com a quantidade de transições da máquina)
  *  Transicao ***transicoes (descrição das transições da máquina, isso é, a função programa ou função de transição como descrito pelo tipo Transicao)
  *
@@ -178,11 +208,11 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     // Símbolos do alfabeto
     maquina->simbolosComprimento = va_arg(argumentos, int);
     maquina->simbolos = malloc(maquina->simbolosComprimento * sizeof(char));
-    for (i = 0; i < maquina->simbolos; i++) {
-        maquina->simbolos[i] = va_arg(argumentos, char);
+    for (i = 0; i < maquina->simbolosComprimento; i++) {
+        maquina->simbolos[i] = va_arg(argumentos, int);
     }
     // Símbolo Branco
-    maquina->branco = indiceSimbolo(maquina, va_arg(argumentos, char));
+    maquina->branco = indiceSimbolo(maquina, va_arg(argumentos, int));
     // Estado inicial
     maquina->estadoAtual = indiceEstado(maquina, va_arg(argumentos, char *));
 
@@ -194,7 +224,7 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     // Configuração inicial da fita
     for (i = 0; i < maquina->fitaComprimento; i++) {
         moverFita(maquina, DIREITA);
-        maquina->fita->simbolo = indiceSimbolo(maquina, va_arg(argumentos, char));
+        maquina->fita->simbolo = indiceSimbolo(maquina, va_arg(argumentos, int));
     }
     // Se a fita iniciar vazia, realiza um movimento para a direita e iniciando ela com um símbolo branco (funcionamento da função moverFita)
     if (!maquina->fitaComprimento) {
@@ -217,8 +247,8 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
         Transicao *transicao = malloc(sizeof(Transicao));
 
         transicao->estadoAtual = indiceEstado(maquina, va_arg(argumentos, char *));
-        transicao->simboloLido = indiceSimbolo(maquina, va_arg(argumentos, char));
-        transicao->simboloGravado = indiceSimbolo(maquina, va_arg(argumentos, char));;
+        transicao->simboloLido = indiceSimbolo(maquina, va_arg(argumentos, int));
+        transicao->simboloGravado = indiceSimbolo(maquina, va_arg(argumentos, int));;
         transicao->movimento = va_arg(argumentos, int);
         transicao->estadoSeguinte = indiceEstado(maquina, va_arg(argumentos, char *));
 
@@ -238,7 +268,11 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
  */
 void imprimirCI(turing_t *maquina) {
     printf("%-10s ", maquina->estados[maquina->estadoAtual]);
-    fita_t *fita = maquina->fita;
+    Fita *fita = maquina->fita;
+
+    while(fita->esquerda) {
+        fita = fita->esquerda;
+    }
 
     while (fita){
         if (fita == maquina->fita){
@@ -248,7 +282,7 @@ void imprimirCI(turing_t *maquina) {
         }
         fita = fita->direita;
     }
-    printf("/n");
+    printf("\n");
 }
 
 
@@ -279,5 +313,4 @@ void executarMaquina(turing_t *maquina) {
         moverFita(maquina, transicao->movimento);
         maquina->estadoAtual = transicao->estadoSeguinte;
     }
-
 }
