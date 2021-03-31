@@ -5,7 +5,7 @@
 enum {
     ESQUERDA,
     DIREITA
-}
+};
 
 // Dados para a execução de uma transição
 typedef struct {
@@ -17,10 +17,10 @@ typedef struct {
 } transicao_t;
 
 // Definindo a fita do autômato com o símbolo e ponteiros para a esquerda e direita da posição atual
-typedef struct fita {
+typedef struct fita_t {
     int simbolo;
-    fita *esquerda;
-    fita *direita;
+    fita_t *esquerda;
+    fita_t *direita;
 } fita_t;
 
 // Definindo um tipo com todos os elementos que compõem a máquina de Turing
@@ -46,14 +46,21 @@ void main(int argc, char *argv[]) {
 }
 
 /*
- * Função: agruparValores
+ * Função: indiceEstado
  * ------------------------
- * Agrupa valores iguais encontrados em um array e os ordena em ordem crescente.
- * Exemplo: Se o vetor de origem é [3, 3, 1, 1, 2] o vetor de destino será [1, 2, 3] após a execução da função e retorna o valor 3 (número de elementos no array de destino)
+ * Procura por um estado no conjunto de estados de uma máquina
  * 
- * vetorOrigem: array de inteiros
- * vetorDestino: array que recebe o agrupamento em ordem crescence
- * comprVetor: tamanho do array de origem vetorOrigem
+ * *turing: a máquina de Turing a qual possui um conjunto de estados
+ * estado: estado que se deseja procurar no conjunto de estados da máquina
  * 
- * returns: retorna a quantidade final de elementos gravados no vetor de destino
+ * return: retorna o índice do estado. Retorna 0 caso não encontre nenhuma correspondência.
  */
+int indiceEstado (turing_t *turing, char *estado) {
+    int indice;
+    for (indice = 0; indice < turing->estadosComprimento; indice++) {
+        if (!strcmp(turing->estados[indice], estado)) {
+            return indice;
+        }
+    }
+    return 0;
+}
