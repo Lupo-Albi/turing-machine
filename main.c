@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 enum {
     ESQUERDA,
@@ -88,7 +89,7 @@ int indiceSimbolo(turing_t *turing, char simbolo) {
 
 /*
  * Função: moverFita
- ----------------------
+ * ---------------------
  * Realiza um movimento na fita da máquina para a direita ou para a esquerda
  * Realiza uma verificação para garantir que o ponteiro para a fita e do sentindo do movimento não são inválidos (NULL). Caso sejam, aloca espaço para um símbolo e o preenche com o símbolo Branco e realiza o movimento
  *
@@ -130,4 +131,29 @@ void moverFita (turing_t *turing, int direcao) {
             }
         }
     }
+}
+
+/* Função: CriarMaquina
+ * -------------------------
+ * Cria um elemento do tipo turing_t com os dados passados para a função, ou seja, "monta" a máquina de turing
+ * 
+ * Essa função se utiliza do header <stdarg.h> para que o número de argumentos seja variável
+ * A ordem dos argumentos é presente na struct do tipo turing_t, bastando inserir cada argumento por vez, separando-os por vírgula:
+ **** int estadosComprimento (apenas um valor inteiro)
+ **** char **estados (quantos caracteres forem desejados, contanto que cada caractere individual esteja entre aspas e separados por vírgula)
+ **** int estadosFinaisComprimento (apenas um valor inteiro)
+ **** int *estadosFinais (quantos caracteres forem desejados, contanto que cada caractere individual esteja entre aspas e separados por vírgula )
+ **** int simbolosComprimento (apenas um valor inteiro)
+ **** char *simbolos (quantos caracteres forem desejados como símbolos do alfabeto, contanto que estejam entre aspas e separados por vírgula)
+ **** int branco (um dos caractere que esteja presente nos símbolos do alfabeto)
+ **** int estadoAtual (um dos estados que esteja presente nos estados)
+ **** int fitaComprimento
+ **** fita_t *fita (conteúdo inicial da fita)
+ **** int transicoesComprimento (apenas um valor inteiro com a quantidade de transições da máquina)
+ **** transicao_t ***transicoes (descrição das transições da máquina, isso é, a função programa ou função de transição)
+ *
+ * Retorna: um elemento do tipo turint_t com todos dados passados como argumento
+ */
+turing_t *criarMaquina (int estadosComprimento, ...) {
+
 }
