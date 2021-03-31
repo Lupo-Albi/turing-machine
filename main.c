@@ -228,3 +228,25 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
 
     return maquina;
 }
+
+/*
+ * Função: imprimirCI
+ * -------------------------
+ * Imprime a configuração instantânea da máquina, exibindo o estado atual e o conteúdo da fita
+ *
+ * *maquina: Máquina de Turing a ser feita a configuração instantânea da sua execução
+ */
+void imprimirCI (turing_t *maquina) {
+    printf("%-10s ", maquina->estados[maquina->estadoAtual]);
+    fita_t *fita = maquina->fita;
+
+    while (fita){
+        if (fita == maquina->fita){
+            printf("[%c]", maquina->simbolos[fita->simbolo]);
+        } else {
+            printf(" %c ", maquina->simbolos[fita->simbolo]);
+        }
+        fita = fita->direita;
+    }
+    printf("/n");
+}
