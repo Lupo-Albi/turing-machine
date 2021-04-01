@@ -42,7 +42,7 @@ typedef struct {
     Transicao ***transicoes;
 } turing_t;
 
-
+/* Chamada das funções */
 int indiceEstado(turing_t *maquina, char *estado);
 int indiceSimbolo(turing_t *maquina, char simbolo);
 void moverFita(turing_t *maquina, int direcao);
@@ -50,14 +50,14 @@ turing_t *criarMaquina (int estadosComprimento, ...);
 void imprimirCI(turing_t *maquina);
 void executarMaquina(turing_t *maquina);
 
-void main(int argc, char *argv[]) {
+int main() {
     turing_t *maquina = criarMaquina(
         /*Estados*/                   5, "q0", "q1", "q2", "q3", "q4",
         /*Estadoos finais*/           1, "q4",        
         /* Símbolos*/                 5, 'U', 'a', 'b', 'A', 'B',
         /*Branco*/                    'U',
         /*Estado Inicial*/            "q0",
-        /*Conteúdo inicial da fita*/  4, 'a', 'a', 'b', 'b',
+        /*Conteúdo inicial da fita*/  4, 'b', 'a', 'b', 'a',
         /*Transições*/                11,
                                       "q0", 'a', 'A', DIREITA, "q1",
                                       "q0", 'B', 'B', DIREITA, "q3",
@@ -72,8 +72,7 @@ void main(int argc, char *argv[]) {
                                       "q3", 'U', 'U', DIREITA, "q4"
     );
 
-    executarMaquina(maquina);
-    
+    executarMaquina(maquina);   
 }
 
 /*
@@ -270,11 +269,14 @@ void imprimirCI(turing_t *maquina) {
     printf("%-10s ", maquina->estados[maquina->estadoAtual]);
     Fita *fita = maquina->fita;
 
+    // Coloca a fita no início
     while(fita->esquerda) {
         fita = fita->esquerda;
     }
 
+    // Imprime a fita do início ao fim
     while (fita){
+        // Se corresponder à cabeça de leitura, destaca o símbolo entre colchetes
         if (fita == maquina->fita){
             printf("[%c]", maquina->simbolos[fita->simbolo]);
         } else {
@@ -303,14 +305,15 @@ void executarMaquina(turing_t *maquina) {
 
         for (i = 0; i < maquina->estadosFinaisComprimento; i++) {
             if (maquina->estadosFinais[i] == maquina->estadoAtual) {
+                printf("ACEITA");
                 return;
             }
         }
-
         // Executa a transição
         Transicao *transicao = maquina->transicoes[maquina->estadoAtual][maquina->fita->simbolo];
         maquina->fita->simbolo = transicao->simboloGravado;
         moverFita(maquina, transicao->movimento);
         maquina->estadoAtual = transicao->estadoSeguinte;
     }
+    printf("ABORTADO! Máximo de iterações atingidas.");
 }
