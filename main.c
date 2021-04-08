@@ -51,30 +51,34 @@ void imprimirCI(turing_t *maquina);
 void executarMaquina(turing_t *maquina);
 
 int main() {
+    // A ordem dos argumentos está presente na struct do tipo turing_t, bastando inserir cada argumento por vez, separando-os por vírgula
+    // Os números do tipo int no início das linhas corresponde a quantidade de elemetos daquele parêmetro, seguido então pelos elementos
+    // Estados devem ser escritos com aspas dupla por serem strings, mas símbolos devem ser indicados com aspas simples por se tratarem de caracteres
     turing_t *maquina = criarMaquina(
-        /*Estados*/                   5, "q0", "q1", "q2", "q3", "q4",
-        /*Estadoos finais*/           1, "q4",        
-        /* Símbolos*/                 5, 'U', 'a', 'b', 'A', 'B',
-        /*Branco*/                    'U',
-        /*Estado Inicial*/            "q0",
-        /*Conteúdo inicial da fita*/  4, 'b', 'a', 'b', 'a',
-        /*Transições*/                11,
-                                      "q0", 'a', 'A', DIREITA, "q1",
-                                      "q0", 'B', 'B', DIREITA, "q3",
-                                      "q0", 'U', 'U', DIREITA, "q4",
-                                      "q1", 'a', 'a', DIREITA, "q1",
-                                      "q1", 'b', 'B', ESQUERDA, "q2",
-                                      "q1", 'B', 'B', DIREITA, "q1",
-                                      "q2", 'a', 'a', ESQUERDA, "q2",
-                                      "q2", 'A', 'A', DIREITA, "q0",
-                                      "q2", 'B', 'B', ESQUERDA, "q2",
-                                      "q3", 'B', 'B', DIREITA, "q3",
-                                      "q3", 'U', 'U', DIREITA, "q4"
+        /* Estados */                   5, "q0", "q1", "q2", "q3", "q4",
+        /* Estadoos finais */           1, "q4",        
+        /* Símbolos */                  5, 'U', 'a', 'b', 'A', 'B',
+        /* Branco */                    'U',
+        /* Estado Inicial */            "q0",
+        /* Conteúdo inicial da fita */  4, 'a', 'a', 'b', 'b',
+        /* Transições */                11,
+                                       "q0", 'a', 'A', DIREITA, "q1",
+                                       "q0", 'B', 'B', DIREITA, "q3",
+                                       "q0", 'U', 'U', DIREITA, "q4",
+                                       "q1", 'a', 'a', DIREITA, "q1",
+                                       "q1", 'b', 'B', ESQUERDA, "q2",
+                                       "q1", 'B', 'B', DIREITA, "q1",
+                                       "q2", 'a', 'a', ESQUERDA, "q2",
+                                       "q2", 'A', 'A', DIREITA, "q0",
+                                       "q2", 'B', 'B', ESQUERDA, "q2",
+                                       "q3", 'B', 'B', DIREITA, "q3",
+                                       "q3", 'U', 'U', DIREITA, "q4"
     );
 
     executarMaquina(maquina);   
 }
 
+// Descrição das funções
 /*
  * Função: indiceEstado
  * ------------------------
@@ -167,7 +171,7 @@ void moverFita(turing_t *maquina, int direcao) {
  * Cria um elemento do tipo turing_t com os dados passados para a função, ou seja, "monta" a máquina de turing
  * 
  * Essa função se utiliza do header <stdarg.h> para que o número de argumentos seja variável
- * A ordem dos argumentos é presente na struct do tipo turing_t, bastando inserir cada argumento por vez, separando-os por vírgula:
+ * A ordem dos argumentos está presente na struct do tipo turing_t, bastando inserir cada argumento por vez, separando-os por vírgula:
  *  int estadosComprimento (apenas um valor inteiro)
  *  char **estados (cada estado deve ser escrito como uma string entre aspas duplas e separados por vírgula)
  *  int estadosFinaisComprimento (apenas um valor inteiro)
@@ -188,14 +192,12 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     va_start(argumentos, estadosComprimento);
     turing_t *maquina = malloc(sizeof(turing_t));
     int i;
-
     // Estados da máquina
     maquina->estadosComprimento = estadosComprimento;
     maquina->estados = malloc(estadosComprimento * sizeof(char *));
     for (i = 0; i < estadosComprimento; i++){
         maquina->estados[i] = va_arg(argumentos, char *);
     }
-
     // Estados finais da máquina
     maquina->estadosFinaisComprimento = va_arg(argumentos, int);
     maquina->estadosFinais = malloc(maquina->estadosFinaisComprimento * sizeof(int));
@@ -203,18 +205,16 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     for (i = 0; i < maquina->estadosFinaisComprimento; i++) {
         maquina->estadosFinais[i] = indiceEstado(maquina, va_arg(argumentos, char *));
     }
-
     // Símbolos do alfabeto
     maquina->simbolosComprimento = va_arg(argumentos, int);
     maquina->simbolos = malloc(maquina->simbolosComprimento * sizeof(char));
     for (i = 0; i < maquina->simbolosComprimento; i++) {
-        maquina->simbolos[i] = va_arg(argumentos, int);
+        maquina->simbolos[i] = va_arg(argumentos, int); // As variáveis do tipo char são promovidas ao tipo int quando passadas pela '...' da função, por isso é passado o tipo int para a função va_arg
     }
     // Símbolo Branco
     maquina->branco = indiceSimbolo(maquina, va_arg(argumentos, int));
     // Estado inicial
     maquina->estadoAtual = indiceEstado(maquina, va_arg(argumentos, char *));
-
     // Fita da máquina
     // Comprimento inicial da fita
     maquina->fitaComprimento = va_arg(argumentos, int);
@@ -233,7 +233,6 @@ turing_t *criarMaquina (int estadosComprimento, ...) {
     while (maquina->fita->esquerda) {
         maquina->fita = maquina->fita->esquerda;
     }
-
     // Função Programa da máquina
     maquina->transicoesComprimento = va_arg(argumentos, int);
     // A função programa é uma matriz que armazena a transição de acordo com o estado e símbolo lido, assim são feitas duas alocações: alocação pela quantidade de estados (linhas da matriz) e alocação dos símbolos do alfabeto para cada estado (colunas da matriz)
@@ -300,16 +299,18 @@ void executarMaquina(turing_t *maquina) {
     int contador = 0;
     int maximoIteracoes = 9999;
 
+    // Um número máximo de iterações é colocado para caso a máquina entre em loop
     while(contador < maximoIteracoes) {
         imprimirCI(maquina);
-
+        
+        // Caso o autômato tenha parado em um estado de aceitação
         for (i = 0; i < maquina->estadosFinaisComprimento; i++) {
             if (maquina->estadosFinais[i] == maquina->estadoAtual) {
                 printf("ACEITA");
                 return;
             }
         }
-        // Executa a transição
+        // Executa a transição correspondente ao estado e ao símbolo da fita atual
         Transicao *transicao = maquina->transicoes[maquina->estadoAtual][maquina->fita->simbolo];
         maquina->fita->simbolo = transicao->simboloGravado;
         moverFita(maquina, transicao->movimento);
