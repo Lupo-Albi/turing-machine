@@ -302,6 +302,7 @@ void executarMaquina(turing_t *maquina) {
     // Um número máximo de iterações é colocado para caso a máquina entre em loop
     while(contador < maximoIteracoes) {
         imprimirCI(maquina);
+        contador++;
         
         // Caso o autômato tenha parado em um estado de aceitação
         for (i = 0; i < maquina->estadosFinaisComprimento; i++) {
